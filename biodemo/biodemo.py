@@ -93,13 +93,16 @@ class FastaStats(object):
                  num_bases=None,
                  min_len=None,
                  max_len=None,
-                 average=None):
+                 average=None,
+                 base_counts=None):
         "Build an empty FastaStats object"
         self.num_seqs = num_seqs
         self.num_bases = num_bases
         self.min_len = min_len
         self.max_len = max_len
         self.average = average
+        # NOTE: Working addition to add counts of each base
+        self.base_counts = base_counts
 
     def __eq__(self, other):
         "Two FastaStats objects are equal iff their attributes are equal"
@@ -126,9 +129,16 @@ class FastaStats(object):
         Result:
            A FastaStats object
         '''
+        base_counts = {}
         num_seqs = num_bases = 0
         min_len = max_len = None
         for seq in SeqIO.parse(fasta_file, "fasta"):
+            # NOTE: Base counting mod
+            for b in seq:
+                try:
+                    base_counts[b] += 1
+                except KeyError:
+                    base_counts[b] = 1
             this_len = len(seq)
             if this_len >= minlen_threshold:
                 if num_seqs == 0:
@@ -146,6 +156,8 @@ class FastaStats(object):
         self.num_bases = num_bases
         self.min_len = min_len
         self.max_len = max_len
+        # print(base_counts)
+        self.base_counts = base_counts
         return self
 
     def pretty(self, filename):
